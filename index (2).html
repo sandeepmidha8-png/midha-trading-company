@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midha Trading Company</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f7f6f2;color:#222}
+header{background:#171717;color:white;padding:20px;text-align:center}header h1{margin:0 0 8px;color:#e5b52e}
+.hero{text-align:center;padding:35px 15px;background:#292929;color:white}main{max-width:1100px;margin:25px auto;padding:0 15px}
+input,textarea{width:100%;padding:12px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}button{border:0;padding:11px 14px;border-radius:7px;cursor:pointer;font-weight:bold}
+.filters button{background:white;border:1px solid #ccc}.filters button.active{background:#222;color:white}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+.card,.panel{background:white;padding:16px;border-radius:12px;box-shadow:0 2px 8px #0001}
+.visual img{width:100%;height:100%;object-fit:contain;border-radius:12px}.visual{height:115px;background:#eee;display:grid;place-items:center;margin-bottom:12px}
+.pack{width:85px;height:95px;background:white;border:2px solid #222;display:grid;place-items:center;text-align:center;font-size:12px;font-weight:bold;padding:6px}
+.bottle{width:55px;height:90px;background:#eee;border:2px solid #222;border-radius:10px;display:grid;place-items:center;text-align:center;font-size:10px;font-weight:bold;padding:5px}
+.price{font-weight:bold;margin:10px 0}.add{background:#222;color:white;width:100%}
+.cartline{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #ddd}
+.whatsapp{background:#168b45;color:white;width:100%;font-size:16px;margin-top:12px}.small{color:#777;font-size:13px}
+.cart-float{position:fixed;right:16px;top:14px;z-index:1000;background:#e5b52e;color:#171717;padding:12px 16px;border-radius:30px;box-shadow:0 3px 12px #0004;font-size:15px}
+.toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);z-index:99999;background:#171717;color:#fff;padding:22px 24px;border:2px solid #e5b52e;border-radius:16px;box-shadow:0 10px 40px #0008;max-width:calc(100% - 32px);width:320px;text-align:center;display:none}
+.toast.show{display:block;animation:popupIn .18s ease-out}.toast strong{color:#e5b52e;display:block;font-size:23px;margin-bottom:10px}.toast .toast-product{font-size:17px;margin-bottom:14px}.toast-continue{display:inline-block;background:#e5b52e;color:#171717;width:100%;padding:12px;border-radius:9px;font-weight:800}@keyframes popupIn{from{opacity:0;transform:translate(-50%,-46%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+</style>
+</head>
+<body>
+<button class="cart-float" onclick="goToCart()" id="cartCount">Cart (0)</button>
+<div class="toast" id="cartToast" role="status" aria-live="polite"><strong id="toastCount">Cart (1)</strong><div class="toast-product" id="toastProduct">Product added to cart</div><div class="toast-continue">CONTINUE SHOPPING</div></div>
+<header><h1>MIDHA TRADING COMPANY</h1><p>New Grain Market, Near Gaushala,<br>Sri Muktsar Sahib</p></header>
+<section class="hero"><h2>Welcome to Midha Trading Company</h2><p>Quality Grocery Products</p></section>
+<main>
+<h2>Our Products</h2><input id="search" placeholder="Search products..." oninput="render()">
+<div class="filters" id="filters"></div><div class="products" id="products"></div>
+<section class="panel" style="margin-top:25px"><h2>Your Cart</h2><div id="cartItems">Your cart is empty.</div><h3 id="total">Total: Price to be confirmed</h3><p class="small">Final prices and quantities will be confirmed on WhatsApp.</p></section>
+<section class="panel" style="margin-top:20px"><h2>Customer Details</h2>
+<input id="customerName" placeholder="Your name"><input id="customerPhone" placeholder="Your mobile number">
+<textarea id="customerAddress" rows="3" placeholder="Your delivery address"></textarea>
+<button class="whatsapp" onclick="sendOrder()">ORDER ON WHATSAPP</button></section>
+</main>
+<script>
+const whatsappNumber="919914210015";
+const products=[
+["Wheat Atta","Atta","atta"],["Multigrain Atta","Atta","atta"],["Jowar Atta","Atta","grain"],["Kangni Atta","Atta","grain"],["Ragi Atta","Atta","grain"],["Soya Bean Atta","Atta","beans"],["Oats Atta","Atta","oats"],["Black Chana Atta","Atta","beans"],["Besan","Atta","besan"],["Special Sugar-Free Atta","Atta","atta"],["Coconut Oil","Oils","coconut-oil"],["Sesame Oil","Oils","oil"],["Mustard Oil","Oils","mustard-oil"],["Alsi Oil","Oils","oil"],["Almond Oil","Oils","oil"],["Walnut Oil","Oils","oil"],["Special Tea","Tea","tea"],["Tea Masala","Tea","spice"],["Pulses","Pulses","pulses"],["Haldi Powder","Spices","haldi"],["Red Chili Powder","Spices","chili"],["Besan","Atta","atta"],["Mustard Oil","Oils","oil"]
+].map((p,i)=>({id:i,name:p[0],category:p[1],image:p[2]}));
+const realImages={"Wheat Atta":"https://images.pexels.com/photos/30556658/pexels-photo-30556658.jpeg?auto=compress&cs=tinysrgb&w=700","Multigrain Atta":"https://images.pexels.com/photos/30556658/pexels-photo-30556658.jpeg?auto=compress&cs=tinysrgb&w=700","Jowar Atta":"https://www.kediaorganic.com/cdn/shop/products/04.jpg?v=1697091969","Kangni Atta":"https://www.greendna.in/cdn/shop/files/finger_millets33_1200x1200.webp?v=1765884444","Ragi Atta":"https://kisaonlinestore.com/cdn/shop/files/RagiFlour_FingerMilletFlour-01.jpg?v=1737105067&width=1946","Soya Bean Atta":"https://i.ebayimg.com/images/g/2f8AAOSw4G1l0F0N/s-l1200.png","Oats Atta":"https://rhbulk.com/cdn/shop/files/RHBulk_Gluten_Free_Whole_Oat_Flour_Flat.jpg?v=1776713669","Black Chana Atta":"https://nyspiceshop.com/cdn/shop/files/black_chickpea_flour_4.webp?v=1776285883&width=1445","Besan":"https://nyspiceshop.com/cdn/shop/files/besan_flour_1_grande.webp?v=1776206629&width=1445","Special Sugar-Free Atta":"https://images.pexels.com/photos/30556658/pexels-photo-30556658.jpeg?auto=compress&cs=tinysrgb&w=700","Coconut Oil":"https://images.pexels.com/photos/725998/pexels-photo-725998.jpeg?auto=compress&cs=tinysrgb&w=700","Sesame Oil":"https://www.peravalifoods.com/cdn/shop/files/woodpressed-white-sesame-oil.png?v=1777884525&width=1024","Alsi Oil":"https://villageorganica.com/cdn/shop/files/web13.webp?v=1690600430&width=1445","Almond Oil":"https://static.kuma.tridge.com/2026-03-13/images/product_thumbnails/cold-pressed-almond-oil.jpg","Walnut Oil":"https://static.kuma.tridge.com/2026-03-26/images/product_thumbnails/cold-pressed-walnut-oil.jpg","Mustard Oil":"https://www.myindianproducts.com/images/gi_products/haryana_mustard_oil_all_over_haryana.jpg","Special Tea":"https://files.ekmcdn.com/simplispecial/images/russian-caravan-speciality-black-loose-leaf-tea-in-assorted-packs-672-p.jpg?h=1000&v=3CF7818A-F594-41F6-A22D-884FB766D472&w=1000","Tea Masala":"https://img500.exportersindia.com/product_images/bc-500/2025/11/15478988/authentic-tea-masala-powder-1764062461-8452578.jpeg","Pulses":"https://www.hydrisupermarket.com.pk/images/product_gallery/1687349551_DAAL-MIX.jpg","Haldi Powder":"https://images.pexels.com/photos/6220707/pexels-photo-6220707.jpeg?auto=compress&cs=tinysrgb&w=700","Red Chili Powder":"https://images.pexels.com/photos/8693381/pexels-photo-8693381.jpeg?auto=compress&cs=tinysrgb&w=700"};
+function productImage(name){const src=realImages[name];if(src)return `<img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer">`;return "";}
+let cart={},category="All",toastTimer;
+function setup(){const cats=["All",...new Set(products.map(p=>p.category))];document.getElementById("filters").innerHTML=cats.map(c=>`<button class="${c==="All"?"active":""}" onclick="setCategory('${c}',this)">${c}</button>`).join("");render()}
+function setCategory(c,b){category=c;document.querySelectorAll(".filters button").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
+function render(){const s=document.getElementById("search").value.toLowerCase();const shown=products.filter(p=>(category==="All"||p.category===category)&&p.name.toLowerCase().includes(s));document.getElementById("products").innerHTML=shown.map(p=>`<div class="card"><div class="visual">${productImage(p.name)}</div><strong>${p.name}</strong><p class="small">${p.category}</p><div class="price">${p.name==="Pulses"?"Starting from ₹140":"Price on request"}</div><button class="add" onclick="add(${p.id})">Add to Cart</button></div>`).join("");drawCart()}
+function add(id){cart[id]=(cart[id]||0)+1;drawCart();showCartToast(products.find(p=>p.id===id).name)}
+function cartQuantity(){return Object.values(cart).reduce((sum,q)=>sum+q,0)}
+function showCartToast(productName){const toast=document.getElementById("cartToast");document.getElementById("toastCount").textContent=`Cart (${cartQuantity()})`;document.getElementById("toastProduct").textContent=`${productName} added to cart`;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(hideCartToast,1000)}
+function hideCartToast(){document.getElementById("cartToast").classList.remove("show");clearTimeout(toastTimer)}
+function goToCart(){document.getElementById("cartItems").scrollIntoView({behavior:"smooth",block:"center"})}
+function changeQty(id,n){cart[id]=(cart[id]||0)+n;if(cart[id]<=0)delete cart[id];drawCart()}
+function drawCart(){const e=Object.entries(cart);document.getElementById("cartCount").textContent=`Cart (${cartQuantity()})`;document.getElementById("cartItems").innerHTML=e.length?e.map(([id,q])=>{const p=products.find(x=>x.id==id);return `<div class="cartline"><span>${p.name} × ${q}</span><span><button onclick="changeQty(${id},-1)">−</button> <button onclick="changeQty(${id},1)">+</button></span></div>`}).join(""):"Your cart is empty.";document.getElementById("total").textContent="Total: Price to be confirmed"}
+function sendOrder(){const e=Object.entries(cart);if(!e.length){alert("Please add products to your cart.");return}const name=document.getElementById("customerName").value.trim(),phone=document.getElementById("customerPhone").value.trim(),address=document.getElementById("customerAddress").value.trim();if(!name||!phone||!address){alert("Please enter your name, mobile number and address.");return}let m="Hello Midha Trading Company! I want to place an order.\n\nCustomer: "+name+"\nMobile: "+phone+"\nAddress: "+address+"\n\nORDER DETAILS:\n";e.forEach(([id,q])=>{m+=products.find(p=>p.id==id).name+" × "+q+"\n"});m+="\nPlease confirm availability and final prices. Thank you!";window.open("https://wa.me/"+whatsappNumber+"?text="+encodeURIComponent(m),"_blank")}
+setup();
+</script>
+</body>
+</html>
