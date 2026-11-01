@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midha Trading Company</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f7f6f2;color:#222}
+header{background:#171717;color:white;padding:20px;text-align:center}header h1{margin:0 0 8px;color:#e5b52e}
+.hero{text-align:center;padding:35px 15px;background:#292929;color:white}main{max-width:1100px;margin:25px auto;padding:0 15px}
+input,textarea{width:100%;padding:12px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}button{border:0;padding:11px 14px;border-radius:7px;cursor:pointer;font-weight:bold}
+.filters button{background:white;border:1px solid #ccc}.filters button.active{background:#222;color:white}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+.card,.panel{background:white;padding:16px;border-radius:12px;box-shadow:0 2px 8px #0001}
+.visual{height:115px;background:#eee;display:grid;place-items:center;margin-bottom:12px}
+.pack{width:85px;height:95px;background:white;border:2px solid #222;display:grid;place-items:center;text-align:center;font-size:12px;font-weight:bold;padding:6px}
+.bottle{width:55px;height:90px;background:#eee;border:2px solid #222;border-radius:10px;display:grid;place-items:center;text-align:center;font-size:10px;font-weight:bold;padding:5px}
+.price{font-weight:bold;margin:10px 0}.add{background:#222;color:white;width:100%}
+.cartline{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #ddd}
+.whatsapp{background:#168b45;color:white;width:100%;font-size:16px;margin-top:12px}.small{color:#777;font-size:13px}
+</style>
+</head>
+<body>
+<header><h1>MIDHA TRADING COMPANY</h1><p>New Grain Market, Near Gaushala,<br>Sri Muktsar Sahib</p></header>
+<section class="hero"><h2>Welcome to Midha Trading Company</h2><p>Quality Grocery Products</p></section>
+<main>
+<h2>Our Products</h2><input id="search" placeholder="Search products..." oninput="render()">
+<div class="filters" id="filters"></div><div class="products" id="products"></div>
+<section class="panel" style="margin-top:25px"><h2>Your Cart</h2><div id="cartItems">Your cart is empty.</div><h3 id="total">Total: Price to be confirmed</h3><p class="small">Final prices and quantities will be confirmed on WhatsApp.</p></section>
+<section class="panel" style="margin-top:20px"><h2>Customer Details</h2>
+<input id="customerName" placeholder="Your name"><input id="customerPhone" placeholder="Your mobile number">
+<textarea id="customerAddress" rows="3" placeholder="Your delivery address"></textarea>
+<button class="whatsapp" onclick="sendOrder()">ORDER ON WHATSAPP</button></section>
+</main>
+<script>
+const whatsappNumber="919914210015";
+const products=[
+["Wheat Atta","Atta"],["Multigrain Atta","Atta"],["Jowar Atta","Atta"],["Kangni Atta","Atta"],["Ragi Atta","Atta"],["Soya Bean Atta","Atta"],["Oats Atta","Atta"],["Black Chana Atta","Atta"],["Special Sugar-Free Atta","Atta"],["Coconut Oil","Oils"],["Sesame Oil","Oils"],["Alsi Oil","Oils"],["Almond Oil","Oils"],["Walnut Oil","Oils"],["Special Tea","Tea"],["Tea Masala","Tea"],["Pulses","Pulses"],["Haldi Powder","Spices"],["Red Chili Powder","Spices"]
+].map((p,i)=>({id:i,name:p[0],category:p[1]}));
+let cart={},category="All";
+function setup(){const cats=["All",...new Set(products.map(p=>p.category))];document.getElementById("filters").innerHTML=cats.map(c=>`<button class="${c==="All"?"active":""}" onclick="setCategory('${c}',this)">${c}</button>`).join("");render()}
+function setCategory(c,b){category=c;document.querySelectorAll(".filters button").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
+function render(){const s=document.getElementById("search").value.toLowerCase();const shown=products.filter(p=>(category==="All"||p.category===category)&&p.name.toLowerCase().includes(s));document.getElementById("products").innerHTML=shown.map(p=>`<div class="card"><div class="visual">${p.category==="Oils"?`<div class="bottle">MIDHA<br>${p.name}</div>`:`<div class="pack">MIDHA<br>${p.name}</div>`}</div><strong>${p.name}</strong><p class="small">${p.category}</p><div class="price">${p.name==="Pulses"?"Starting from ₹140":"Price on request"}</div><button class="add" onclick="add(${p.id})">Add to Cart</button></div>`).join("");drawCart()}
+function add(id){cart[id]=(cart[id]||0)+1;drawCart()}
+function changeQty(id,n){cart[id]=(cart[id]||0)+n;if(cart[id]<=0)delete cart[id];drawCart()}
+function drawCart(){const e=Object.entries(cart);document.getElementById("cartItems").innerHTML=e.length?e.map(([id,q])=>{const p=products.find(x=>x.id==id);return `<div class="cartline"><span>${p.name} × ${q}</span><span><button onclick="changeQty(${id},-1)">−</button> <button onclick="changeQty(${id},1)">+</button></span></div>`}).join(""):"Your cart is empty.";document.getElementById("total").textContent="Total: Price to be confirmed"}
+function sendOrder(){const e=Object.entries(cart);if(!e.length){alert("Please add products to your cart.");return}const name=document.getElementById("customerName").value.trim(),phone=document.getElementById("customerPhone").value.trim(),address=document.getElementById("customerAddress").value.trim();if(!name||!phone||!address){alert("Please enter your name, mobile number and address.");return}let m="Hello Midha Trading Company! I want to place an order.\n\nCustomer: "+name+"\nMobile: "+phone+"\nAddress: "+address+"\n\nORDER DETAILS:\n";e.forEach(([id,q])=>{m+=products.find(p=>p.id==id).name+" × "+q+"\n"});m+="\nPlease confirm availability and final prices. Thank you!";window.open("https://wa.me/"+whatsappNumber+"?text="+encodeURIComponent(m),"_blank")}
+setup();
+</script>
+</body>
+</html>
